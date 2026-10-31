@@ -1,0 +1,15 @@
+/* Design tokens for theming.
+   Import this in index.css or component-level styles.
+   Swap values here to apply a new theme without touching components. */
+
+:root {
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.5);
+  --shadow-md: 0 4px 6px rgb(0 0 0 / 0.5);
+
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+}

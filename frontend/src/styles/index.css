@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+/* Streamdown @source – needed for Tailwind v4 to scan streamdown classes */
+/* @source "../node_modules/streamdown/dist"; */
+
+:root {
+  /* Design tokens – swap these for dark/light themes */
+  --color-bg: #0a0a0a;
+  --color-surface: #171717;
+  --color-border: #262626;
+  --color-text: #fafafa;
+  --color-text-muted: #737373;
+  --color-accent: #6366f1;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: system-ui, sans-serif;
+}

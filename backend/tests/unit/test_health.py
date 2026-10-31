@@ -39,6 +39,21 @@ def test_health_does_not_touch_database(monkeypatch):
     assert response.json() == {"status": "ok"}
 
 
+def test_health_does_not_touch_database(monkeypatch):
+    """T01 guard: /api/health is liveness-only — must not open DB connections."""
+    import psycopg
+    import psycopg_pool
+
+    def _fail(*args, **kwargs):
+        raise AssertionError("/api/health must not touch the database")
+
+    monkeypatch.setattr(psycopg, "connect", _fail)
+    monkeypatch.setattr(psycopg_pool, "AsyncConnectionPool", _fail)
+    response = client.get("/api/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
 def test_ready_returns_ready():
     """GET /api/ready must return 200 with {\"status\": \"ready\"} in the scaffold."""
     response = client.get("/api/ready")

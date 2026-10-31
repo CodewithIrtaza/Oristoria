@@ -34,10 +34,10 @@ This document defines the roadmap as **vertical slices**. Each task delivers a r
   - `frontend/src/App.tsx`
   - `frontend/src/api/client.ts`
 - **Acceptance Criteria:**
-  - [ ] `GET /api/health` returns `200 {"status": "ok"}` without querying the database.
-  - [ ] Frontend displays a green "● ok" indicator on load when connected to the backend.
-  - [ ] Frontend gracefully shows "● offline" if the backend is stopped.
-  - [ ] CORS is configured to allow `VITE_API_BASE_URL` and `ALLOWED_ORIGINS`.
+  - [x] `GET /api/health` returns `200 {"status": "ok"}` without querying the database.
+  - [x] Frontend displays a green "● ok" indicator on load when connected to the backend.
+  - [x] Frontend gracefully shows "● offline" if the backend is stopped.
+  - [x] CORS is configured to allow `VITE_API_BASE_URL` and `ALLOWED_ORIGINS`.
 - **Test to write first:**
   - Unit test in `backend/tests/unit/test_health.py::test_health_returns_ok`: `client.get("/api/health").status_code == 200`
 - **Depends on:** None

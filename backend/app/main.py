@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.api.health import router as health_router
+from app.api.messages import router as messages_router
 
 
 @asynccontextmanager
@@ -34,7 +35,7 @@ def create_app() -> FastAPI:
 
     # Routers
     application.include_router(health_router, prefix="/api")
-    # TODO: include conversations, messages, documents, memory routers
+    application.include_router(messages_router, prefix="/api")
 
     return application
 

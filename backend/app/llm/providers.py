@@ -15,8 +15,10 @@ def get_chat_model() -> BaseChatModel:
     provider = settings.llm_provider
 
     if provider == "fake":
-        from langchain_core.language_models.fake_chat_models import FakeChatModel
-        return FakeChatModel(responses=["Hello! I am a fake LLM for testing."])
+        # FakeListChatModel streams its responses token-by-token, giving a
+        # deterministic end-to-end streaming path for tests and dev.
+        from langchain_core.language_models.fake_chat_models import FakeListChatModel
+        return FakeListChatModel(responses=["Hello! I am a fake LLM for testing."])
 
     if provider == "groq":
         from langchain_groq import ChatGroq

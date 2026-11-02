@@ -35,3 +35,8 @@ Thumbs.db
 
 # Superpowers workspaces (git-ignored scratch)
 .superpowers/
+
+# Local docs / agent rules (untracked)
+Docs/
+AGENTS.md
+

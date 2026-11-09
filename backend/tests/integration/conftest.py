@@ -54,7 +54,7 @@ def db_cleaner(db_available: str) -> Iterator[None]:
                 *CHECKPOINT_TABLES,
             ):
                 try:
-                    conn.execute(f"TRUNCATE {table}")
+                    conn.execute(f"TRUNCATE {table} CASCADE")
                 except psycopg.errors.UndefinedTable:
                     pass  # created lazily by migrations / AsyncPostgresSaver.setup()
         finally:

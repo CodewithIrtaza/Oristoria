@@ -18,7 +18,7 @@ export function Composer({ disabled, onSend }: ComposerProps) {
   }
 
   return (
-    <form onSubmit={submit} className="flex w-full max-w-2xl gap-2">
+    <form onSubmit={submit} role="form" className="flex w-full max-w-2xl gap-2">
       <input
         aria-label="Message"
         className="flex-1 rounded-lg border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm text-neutral-100 outline-none focus:border-neutral-600"

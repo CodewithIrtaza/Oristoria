@@ -1,6 +1,7 @@
 """psycopg 3 async connection pool.
 
-Implemented in Task 1. Stub here; pool is opened in lifespan.
+Opened in app lifespan; closed on shutdown. Uses autocommit=True and
+dict_row as required by AsyncPostgresSaver (Docs/AGENTS.md).
 """
 from __future__ import annotations
 
@@ -12,6 +13,26 @@ if TYPE_CHECKING:
 # Module-level pool; assigned during app lifespan startup.
 pool: "AsyncConnectionPool | None" = None
 
-# TODO Task 1:
-# async def open_pool(dsn: str) -> AsyncConnectionPool
-# async def close_pool() -> None
+
+async def open_pool(dsn: str) -> None:
+    """Open the async connection pool (autocommit + dict_row)."""
+    global pool
+    from psycopg_pool import AsyncConnectionPool
+    from psycopg.rows import dict_row
+
+    # psycopg does not understand SQLAlchemy-style "+psycopg" driver specifiers.
+    dsn = dsn.replace("+psycopg", "", 1)
+
+    pool = AsyncConnectionPool(
+        dsn,
+        kwargs={"autocommit": True, "row_factory": dict_row},
+        open=True,
+    )
+
+
+async def close_pool() -> None:
+    """Close the async connection pool."""
+    global pool
+    if pool is not None:
+        await pool.close()
+        pool = None

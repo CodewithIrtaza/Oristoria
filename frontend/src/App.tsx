@@ -1,21 +1,52 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { Composer } from './components/Composer'
 import { ChatView } from './components/ChatView'
+import { Sidebar } from './components/Sidebar'
 import { useAnonId } from './hooks/useAnonId'
-import { useChatStream } from './hooks/useChatStream'
+import { useConversations } from './hooks/useConversations'
+import { useChatStream, type ChatMessage } from './hooks/useChatStream'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 
+function toChatMessages(
+  msgs: Array<{ role: string; content: string }>,
+): ChatMessage[] {
+  return msgs.map((m, i) => ({
+    id: `server-${i}`,
+    role: m.role as 'user' | 'assistant',
+    content: m.content,
+  }))
+}
+
 function App() {
   const [status, setStatus] = useState<string>('loading…')
+  const [initialMessages, setInitialMessages] = useState<ChatMessage[]>([])
   const anonId = useAnonId()
 
-  // T02 placeholder: a client-side id so a turn can stream without the
-  // conversation table. Task 3 replaces this with real creation + sidebar.
-  const conversationId = useMemo(() => crypto.randomUUID(), [])
+  const { conversations, active, create, select } =
+    useConversations(anonId)
 
-  const { messages, streaming, send } = useChatStream(conversationId, anonId)
+  const { messages, streaming, send } = useChatStream(
+    active ?? '',
+    anonId,
+    initialMessages,
+  )
+  const sendRef = useRef(send)
+  sendRef.current = send
+
+  const handleSelect = async (id: string) => {
+    const detail = await select(id)
+    setInitialMessages(toChatMessages(detail?.messages ?? []))
+  }
+
+  const handleSend = async (content: string) => {
+    if (!active) {
+      const id = await create()
+      await select(id)
+    }
+    await sendRef.current(content)
+  }
 
   useEffect(() => {
     fetch(`${API_BASE}/api/health`)
@@ -25,27 +56,52 @@ function App() {
   }, [])
 
   return (
-    <main className="min-h-screen flex flex-col items-center gap-4 bg-neutral-950 text-neutral-100 py-10 px-4">
-      <h1 className="text-4xl font-bold tracking-tight">Oristoria</h1>
-      <p className="text-neutral-400 text-sm">LangGraph chat with PDF context</p>
-      <div className="rounded-lg border border-neutral-800 px-6 py-4 text-center">
-        <span className="text-xs uppercase tracking-widest text-neutral-500">API status</span>
-        <p className="mt-1 text-lg font-mono">
-          {status === 'ok' ? (
-            <span className="text-emerald-400">● ok</span>
-          ) : status === 'loading…' ? (
-            <span className="text-yellow-400">● {status}</span>
-          ) : (
-            <span className="text-red-400">● {status}</span>
-          )}
+    <main className="min-h-screen flex flex-col bg-neutral-950 text-neutral-100">
+      <header className="border-b border-neutral-800 px-6 py-4">
+        <h1 className="text-2xl font-bold tracking-tight">Oristoria</h1>
+        <p className="text-neutral-400 text-xs">
+          LangGraph chat with PDF context
         </p>
-      </div>
+      </header>
 
-      <div className="flex w-full max-w-2xl flex-1 flex-col gap-4 overflow-y-auto">
-        <ChatView messages={messages} />
-      </div>
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar onSelect={handleSelect} />
 
-      <Composer disabled={streaming} onSend={(content) => void send(content)} />
+        <div className="flex-1 flex flex-col p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <span className="text-xs uppercase tracking-widest text-neutral-500">
+              Conversation
+            </span>
+            <span className="text-xs text-neutral-400">
+              {conversations.find((c) => c.id === active)?.title ?? 'New chat'}
+            </span>
+          </div>
+
+          <div className="flex flex-col items-center gap-4 mb-6">
+            <span className="text-xs uppercase tracking-widest text-neutral-500">
+              API status
+            </span>
+            <p className="text-lg font-mono">
+              {status === 'ok' ? (
+                <span className="text-emerald-400">● ok</span>
+              ) : status === 'loading…' ? (
+                <span className="text-yellow-400">● {status}</span>
+              ) : (
+                <span className="text-red-400">● {status}</span>
+              )}
+            </p>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            <ChatView messages={messages} />
+          </div>
+
+          <Composer
+            disabled={streaming}
+            onSend={(content) => void handleSend(content)}
+          />
+        </div>
+      </div>
     </main>
   )
 }

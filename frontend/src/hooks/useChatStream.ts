@@ -19,6 +19,7 @@ export interface ChatStream {
   messages: ChatMessage[]
   streaming: boolean
   send: (content: string) => Promise<void>
+  stop: () => void
 }
 
 let tempId = 0
@@ -36,6 +37,12 @@ export function useChatStream(
   useEffect(() => {
     setMessages(initialMessages)
   }, [conversationId, initialMessages])
+
+  const stop = useCallback(() => {
+    controller.current?.abort()
+    controller.current = null
+    setStreaming(false)
+  }, [])
 
   const send = useCallback(
     async (content: string) => {
@@ -73,6 +80,10 @@ export function useChatStream(
           }
         }
       } catch (err) {
+        // Ignore AbortError - it's expected when user clicks Stop
+        if (err instanceof Error && err.name === 'AbortError') {
+          return
+        }
         setMessages((prev) =>
           patchLastAssistant(prev, (m) => ({
             ...m,
@@ -87,7 +98,7 @@ export function useChatStream(
     [conversationId, anonId],
   )
 
-  return { messages, streaming, send }
+  return { messages, streaming, send, stop }
 }
 
 /** Patch the trailing assistant bubble – the one currently streaming. */

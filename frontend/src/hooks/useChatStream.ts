@@ -3,7 +3,7 @@
  * for the (single) T02 conversation. Stop-button abort arrives in
  * Task 4; the hook already builds on AbortController for that.
  */
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { sendMessageStream } from '../api/client'
 import { parseSSEStream } from '../api/sse'
 
@@ -23,10 +23,19 @@ export interface ChatStream {
 
 let tempId = 0
 
-export function useChatStream(conversationId: string, anonId: string): ChatStream {
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+export function useChatStream(
+  conversationId: string,
+  anonId: string,
+  initialMessages: ChatMessage[] = [],
+): ChatStream {
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages)
   const [streaming, setStreaming] = useState(false)
   const controller = useRef<AbortController | null>(null)
+
+  // Reset message list when switching conversations.
+  useEffect(() => {
+    setMessages(initialMessages)
+  }, [conversationId, initialMessages])
 
   const send = useCallback(
     async (content: string) => {

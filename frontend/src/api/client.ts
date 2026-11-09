@@ -34,6 +34,43 @@ export async function sendMessageStream(
   )
 }
 
-// TODO Task 2: createConversation, listConversations, getConversation, deleteConversation
+export async function createConversation(
+  anonId: string,
+): Promise<{ id: string }> {
+  const r = await fetch(`${API_BASE}/api/conversations`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Anon-Id': anonId,
+    },
+    body: JSON.stringify({}),
+  })
+  if (!r.ok) throw new Error(`createConversation failed: ${r.status}`)
+  return r.json()
+}
+
+export async function listConversations(
+  anonId: string,
+): Promise<Array<{ id: string; title: string; updated_at: string }>> {
+  const r = await fetch(`${API_BASE}/api/conversations`, {
+    headers: { 'X-Anon-Id': anonId },
+  })
+  if (!r.ok) throw new Error(`listConversations failed: ${r.status}`)
+  return r.json()
+}
+
+export async function getConversation(
+  conversationId: string,
+  anonId: string,
+): Promise<{ id: string; title: string; messages: Array<{ role: string; content: string }> }> {
+  const r = await fetch(
+    `${API_BASE}/api/conversations/${conversationId}`,
+    { headers: { 'X-Anon-Id': anonId } },
+  )
+  if (!r.ok) throw new Error(`getConversation failed: ${r.status}`)
+  return r.json()
+}
+
+// TODO Task 2: deleteConversation
 // TODO Task 3: sendMessage (SSE stream setup lives in sse.ts)
 // TODO Task 4: uploadDocument, listDocuments, deleteDocument

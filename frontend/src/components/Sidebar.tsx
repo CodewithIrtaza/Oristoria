@@ -5,9 +5,9 @@ import { useAnonId } from '../hooks/useAnonId'
 
 export function Sidebar({ onSelect }: { onSelect: (id: string) => void }) {
   const anonId = useAnonId()
-  const { conversations, active, loading, load, create, select, setActive } =
+  const { conversations, active, loading, create, select } =
     useConversations(anonId)
-  const [newChatName, setNewChatName] = useState('')
+  const [, setNewChatName] = useState('')
 
   const handleCreate = async () => {
     const id = await create()

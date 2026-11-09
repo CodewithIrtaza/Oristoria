@@ -33,7 +33,9 @@ function App() {
     initialMessages,
   )
   const sendRef = useRef(send)
-  sendRef.current = send
+  useEffect(() => {
+    sendRef.current = send
+  }, [send])
 
   const handleSelect = async (id: string) => {
     const detail = await select(id)

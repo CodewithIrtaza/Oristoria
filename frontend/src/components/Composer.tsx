@@ -1,12 +1,14 @@
-/** Composer – text input + send button. Disabled while streaming (T02). */
+/** Composer – text input + send/stop button. Disabled while streaming (T02). Stop button (T04). */
 import { useState, type FormEvent } from 'react'
 
 export interface ComposerProps {
   disabled: boolean
+  streaming: boolean
   onSend: (content: string) => void
+  onStop?: () => void
 }
 
-export function Composer({ disabled, onSend }: ComposerProps) {
+export function Composer({ disabled, streaming, onSend, onStop }: ComposerProps) {
   const [value, setValue] = useState('')
 
   function submit(e: FormEvent) {
@@ -25,15 +27,25 @@ export function Composer({ disabled, onSend }: ComposerProps) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         disabled={disabled}
-        placeholder={disabled ? 'Streaming…' : 'Type a message'}
+        placeholder={streaming ? 'Streaming…' : 'Type a message'}
       />
       <button
         type="submit"
-        disabled={disabled || !value.trim()}
+        disabled={disabled || streaming || !value.trim()}
         className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
       >
         Send
       </button>
+      {streaming && onStop && (
+        <button
+          type="button"
+          onClick={onStop}
+          className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+          aria-label="Stop streaming"
+        >
+          Stop
+        </button>
+      )}
     </form>
   )
 }

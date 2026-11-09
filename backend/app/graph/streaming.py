@@ -41,6 +41,7 @@ class SSEStreamMapper:
         self._message_id: str | None = None
         self._started = False
         self._finished = False
+        self._accumulated_content = ""
 
     def map(self, part: dict[str, Any]) -> list[ServerSentEvent]:
         """Translate one stream part into zero or more SSE events."""
@@ -71,6 +72,7 @@ class SSEStreamMapper:
                     {"message_id": chunk.id, "conversation_id": self._conversation_id},
                 )
             )
+        self._accumulated_content += content
         events.append(_sse("token", {"delta": content}))
         return events
 
@@ -122,3 +124,7 @@ class SSEStreamMapper:
         if msg.additional_kwargs.get("stopped"):
             return "stopped"
         return msg.response_metadata.get("finish_reason") or "stop"
+
+    def get_accumulated_content(self) -> str:
+        """Return the accumulated token content for this stream."""
+        return self._accumulated_content

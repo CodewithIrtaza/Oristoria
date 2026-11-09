@@ -27,7 +27,7 @@ function App() {
   const { conversations, active, create, select } =
     useConversations(anonId)
 
-  const { messages, streaming, send } = useChatStream(
+  const { messages, streaming, send, stop } = useChatStream(
     active ?? '',
     anonId,
     initialMessages,
@@ -48,6 +48,10 @@ function App() {
       await select(id)
     }
     await sendRef.current(content)
+  }
+
+  const handleStop = () => {
+    stop()
   }
 
   useEffect(() => {
@@ -100,7 +104,9 @@ function App() {
 
           <Composer
             disabled={streaming}
+            streaming={streaming}
             onSend={(content) => void handleSend(content)}
+            onStop={handleStop}
           />
         </div>
       </div>

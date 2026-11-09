@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
+if TYPE_CHECKING: 
     from psycopg_pool import AsyncConnectionPool
 
 # Module-level pool; assigned during app lifespan startup.

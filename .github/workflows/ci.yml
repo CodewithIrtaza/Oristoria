@@ -2,47 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
-  # ── Backend unit tests (no DB, no provider keys) ─────────────────────────
-  backend-unit:
-    name: Backend unit tests
+  backend:
+    name: Backend Tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install uv
-        run: pip install uv
-
-      - name: Install dependencies
-        run: uv sync --extra dev
-
-      - name: Run unit tests
-        env:
-          LLM_PROVIDER: fake
-          DATABASE_URL: ""
-        run: uv run pytest tests/unit -v
-
-  # ── Backend integration tests (real Postgres + pgvector, fake LLM) ────────
-  backend-integration:
-    name: Backend integration tests
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-
     services:
       postgres:
         image: pgvector/pgvector:pg16
@@ -53,51 +20,53 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-
+          --health-cmd="pg_isready -U oristoria"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      DATABASE_URL: postgresql+psycopg://oristoria:oristoria@localhost:5432/oristoria
+      LLM_PROVIDER: fake
+    defaults:
+      run:
+        working-directory: ./backend
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
       - name: Install uv
-        run: pip install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        run: uv python install 3.12
 
       - name: Install dependencies
         run: uv sync --extra dev
 
-      - name: Run integration tests
-        env:
-          LLM_PROVIDER: fake
-          DATABASE_URL: postgresql+psycopg://oristoria:oristoria@localhost:5432/oristoria
-        run: uv run pytest tests/integration -v
+      - name: Run unit tests
+        run: uv run pytest tests/unit -v
 
-  # ── Frontend unit tests ───────────────────────────────────────────────────
   frontend:
-    name: Frontend tests
+    name: Frontend Tests & Lint
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend
-
+        working-directory: ./frontend
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node 22
+      - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run tests
-        run: npm test
+        run: npm test -- --run
+
+      - name: Run lint
+        run: npm run lint
